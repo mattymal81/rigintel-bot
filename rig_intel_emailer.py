@@ -28,7 +28,7 @@ DELAY                = 1
 
 EMAIL_FROM     = os.environ.get("EMAIL_FROM",     "mattmalouf81@gmail.com")
 EMAIL_TO_LIST  = [e.strip() for e in os.environ.get("EMAIL_TO","mattmalouf81@gmail.com").split(",")]
-DASHBOARD_URL  = os.environ.get("DASHBOARD_URL",  "https://rigintel.vercel.app")
+DASHBOARD_URL  = os.environ.get("DASHBOARD_URL",  "https://rigintel-bot.vercel.app")
 DATA_FILE      = os.path.join(os.path.dirname(__file__), "public", "data", "rigs.json")
 
 # ── Claude calls ──────────────────────────────────────────────────────────────
