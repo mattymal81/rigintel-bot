@@ -1,0 +1,46 @@
+name: RigIntel Weekly Email
+
+on:
+  schedule:
+    - cron: '0 11 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  send-rig-intel:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic sendgrid
+
+      - name: Run RigIntel sweep and send email
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+        run: python rig_intel_emailer.py
+
+      - name: Commit updated dashboard data
+        run: |
+          git config user.name "RigIntel Bot"
+          git config user.email "rigintel@users.noreply.github.com"
+          git add public/data/rigs.json
+          git status
+          git diff --staged --quiet || git commit -m "Weekly rig data update - $(date +'%Y-%m-%d')"
+          git push
