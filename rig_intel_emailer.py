@@ -34,8 +34,8 @@ BASINS = [
 
 ANTHROPIC_MODEL = "claude-sonnet-4-6"
 
-EMAIL_FROM    = os.environ.get("EMAIL_FROM", "rigintel@yourcompany.com")
-EMAIL_TO_RAW  = os.environ.get("EMAIL_TO",   "salesperson@yourcompany.com")
+EMAIL_FROM    = os.environ.get("EMAIL_FROM", "mattmalouf81@gmail.com")
+EMAIL_TO_RAW  = os.environ.get("EMAIL_TO",   "mattmalouf81@gmail.com")
 EMAIL_TO_LIST = [e.strip() for e in EMAIL_TO_RAW.split(",")]
 
 # ── Step 1: Sweep rigs via Claude ─────────────────────────────────────────────
