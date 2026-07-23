@@ -2,8 +2,8 @@ name: RigIntel Weekly Email
 
 on:
   schedule:
-    - cron: '0 11 * * 2'  # Every Tuesday at 6:00 AM CDT (11:00 UTC)
-  workflow_dispatch:        # Allows manual trigger from GitHub UI anytime
+    - cron: '0 11 * * 2'
+  workflow_dispatch:
 
 jobs:
   send-rig-intel:
@@ -27,4 +27,13 @@ jobs:
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
         run: python rig_intel_emailer.py
+
+      - name: Commit updated dashboard data
+        run: |
+          git config user.name "RigIntel Bot"
+          git config user.email "rigintel@users.noreply.github.com"
+          git add public/data/rigs.json
+          git diff --staged --quiet || git commit -m "Weekly rig data update - $(date +'%Y-%m-%d')"
+          git push
