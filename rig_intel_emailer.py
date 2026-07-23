@@ -29,7 +29,7 @@ DELAY                = 1
 EMAIL_FROM     = os.environ.get("EMAIL_FROM",     "mattmalouf81@gmail.com")
 EMAIL_TO_LIST  = [e.strip() for e in os.environ.get("EMAIL_TO","mattmalouf81@gmail.com").split(",")]
 DASHBOARD_URL  = os.environ.get("DASHBOARD_URL",  "https://rigintel-bot.vercel.app")
-DATA_FILE      = os.path.join(os.path.dirname(__file__), "public", "data", "rigs.json")
+DATA_FILE      = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "data", "rigs.json")
 
 # ── Claude calls ──────────────────────────────────────────────────────────────
 
@@ -149,16 +149,17 @@ def sweep_all():
 def save_dashboard_data(active, upcoming, top, summary, week_label):
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
     payload = {
-        "week":     week_label,
-        "summary":  summary,
-        "top":      top,
-        "active":   active,
-        "upcoming": upcoming,
+        "week":      week_label,
+        "summary":   summary,
+        "top":       top,
+        "active":    active,
+        "upcoming":  upcoming,
         "generated": datetime.datetime.utcnow().isoformat()+"Z"
     }
+    print(f"  Writing data to: {DATA_FILE}")
     with open(DATA_FILE, "w") as f:
         json.dump(payload, f, indent=2)
-    print(f"  Saved {len(active)} active + {len(upcoming)} upcoming to {DATA_FILE}")
+    print(f"  Saved {len(active)} active + {len(upcoming)} upcoming rigs")
 
 # ── Build slim email ──────────────────────────────────────────────────────────
 
@@ -188,9 +189,9 @@ def top5_cards(active, upcoming):
             diff = (datetime.date.today()-dt).days if is_a else (dt-datetime.date.today()).days
             dlabel = f"{diff}d ago" if is_a else f"in {diff}d"
         except: dlabel = "—"
-        tip_bg = "FFFBEB" if is_a else "EFF6FF"
+        tip_bg     = "FFFBEB" if is_a else "EFF6FF"
         tip_border = "F59E0B" if is_a else "3B82F6"
-        tip_color = "78350F" if is_a else "1E3A5F"
+        tip_color  = "78350F" if is_a else "1E3A5F"
         cards += f"""
     <div style="margin:0 24px 10px;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;">
       <table width="100%" style="background:#F8FAFC;border-bottom:1px solid #E2E8F0;"><tr>
@@ -223,8 +224,8 @@ def top5_cards(active, upcoming):
 def build_email(active, upcoming, top, summary, week_label):
     n_a, n_u = len(active), len(upcoming)
     cards    = top5_cards(active, upcoming)
-    top_hl   = (top or {}).get("_headline","") if top else ""
-    top_ins  = (top or {}).get("_insight","")  if top else ""
+    top_hl   = top.get("_headline","") if top else ""
+    top_ins  = top.get("_insight","")  if top else ""
 
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/>
@@ -277,15 +278,15 @@ def build_email(active, upcoming, top, summary, week_label):
       Open full briefing &rarr;
     </a>
     <div style="font-size:11px;color:#94A3B8;margin-top:10px;">
-      {n_a + n_u} total leads &middot; filter by basin &middot; search by operator or mud company
+      {n_a + n_u} total leads · filter by basin · search by operator or mud company
     </div>
   </div>
 
   <div style="background:#F7F5F0;border-top:1px solid #E8E4DC;padding:16px 32px;text-align:center;">
     <div style="font-size:11px;color:#9CA3AF;line-height:1.6;">
-      RigIntel &middot; Automated weekly sweep &middot; North America<br/>
+      RigIntel · Automated weekly sweep · North America<br/>
       Data estimated from public permit filings, Baker Hughes rig count, and operator releases.<br/>
-      <a href="#" style="color:#6B7280;">Unsubscribe</a> &nbsp;&middot;&nbsp; <a href="#" style="color:#6B7280;">Manage preferences</a>
+      <a href="#" style="color:#6B7280;">Unsubscribe</a> &nbsp;·&nbsp; <a href="#" style="color:#6B7280;">Manage preferences</a>
     </div>
   </div>
 
@@ -306,8 +307,8 @@ def send_email(html, week_label, n_a, n_u):
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    today         = datetime.date.today()
-    week_label    = f"Week of {today.strftime('%b %d, %Y')}"
+    today      = datetime.date.today()
+    week_label = f"Week of {today.strftime('%b %d, %Y')}"
 
     print("[RigIntel] v6 — dashboard edition")
     print(f"[RigIntel] {len(BASINS)} basins · {RIGS_PER_BASIN} active + {LOOKAHEAD_PER_BASIN} upcoming per basin")
